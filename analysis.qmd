@@ -2,5 +2,49 @@
 title: "Cumulative"
 author: "Jishnu Veerapaneni"
 format: html
+execute:
+    echo: false 
 ---
 
+
+
+
+
+
+
+Public opinion about political leaders often depends on where people fall on the ideological spectrum. Using data from the 2020 Cooperative Election Study, one of the largest political surveys in the U.S., we explore how presidential approval varies across different ideological groups.
+
+
+
+
+
+
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+library(primer.data)
+```
+
+
+```{r}
+x <- ces |>
+filter(year == 2020) |>
+select(approval, education, ideology) |>
+drop_na() |>
+slice_sample(n = 2000)
+```
+
+
+
+```{r}
+x |>
+  ggplot(aes(x=ideology, fill = approval)) +
+  geom_bar() +
+  labs(title = "Relationship Between President Approval and Political Ideology", 
+  subtitle = "Most people strongly disapprove.", 
+  x = "Political Ideology", 
+  y = "Count", caption = "Data from CES.", 
+  fill = "Approval of the President")
+
+```
