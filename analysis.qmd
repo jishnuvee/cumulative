@@ -12,7 +12,7 @@ execute:
 
 
 
-Public opinion about political leaders often depends on where people fall on the ideological spectrum. Using data from the 2020 Cooperative Election Study, one of the largest political surveys in the U.S., we explore how presidential approval varies across different ideological groups.
+Public opinion about political leaders often depends on where people fall on the ideological spectrum. Using data from the 2020 Cooperative Election Study, one of the largest political surveys in the U.S., we explore how presidential approval varies across different ideological groups. A potential weakness in my model is that a large portion of the respondents from the data we collected were YouGov panelists, this group might not be representative of the whole population because they might be more politically active and care more about politics than other people do.
 
 
 
