@@ -5,124 +5,128 @@ format:
   html:
     math: mathjax
 execute:
-    echo: false 
-
-
+  echo: false
 ---
 
-
-
-
-
-
-
-Public opinion about political leaders often depends on where people fall on the ideological spectrum. Using data from the 2020 Cooperative Election Study, one of the largest political surveys in the U.S., we explore how presidential approval varies across different ideological groups. A potential weakness in my model is that a large portion of the respondents from the data we collected were YouGov panelists, this group might not be representative of the whole population because they might be more politically active and care more about politics than other people do.
-
-
-
-
-
-
+--- 
 ```{r}
 #| message: false
 #| warning: false
+# Setup
 library(MASS)
 library(tidyverse)
 library(primer.data)
 library(broom)
 library(easystats)
+library(marginaleffects)
+library(dplyr)
+library(kableExtra)
 
-# setup library chunk
-
-
-```
-
-
-```{r}
+# Filter and clean CES data
 x <- ces |>
   filter(year == 2020) |>
   select(approval, ideology, education) |>
   drop_na() |> 
-  filter(! ideology %in% "Not Sure") |> 
+  filter(!ideology %in% "Not Sure") |> 
   mutate(ideology = fct_drop(ideology))
-
-
 ```
 
 
-
 ```{r}
+# Visualization: Bar chart of ideology vs. approval
 x |>
-  ggplot(aes(x=ideology, fill = approval)) +
+  ggplot(aes(x = ideology, fill = approval)) +
   geom_bar() +
-  labs(title = "Relationship Between President Approval and Political Ideology", 
-  subtitle = "Most people strongly disapprove.", 
-  x = "Political Ideology", 
-  y = "Count", caption = "Data from CES.", 
-  fill = "Approval of the President")
-
+  labs(
+    title = "Relationship Between President Approval and Political Ideology", 
+    subtitle = "Most people strongly disapprove.", 
+    x = "Political Ideology", 
+    y = "Count", 
+    caption = "Data from CES", 
+    fill = "Approval of the President"
+  )
 ```
 
+
+
+Public opinion about political leaders often depends on where people fall on the ideological spectrum. Using data from the 2020 Cooperative Election Study, one of the largest political surveys in the U.S., we explore how presidential approval varies across different ideological groups. A potential weakness in my model is that a large portion of the respondents from the data we collected were YouGov panelists; this group might not be representative of the whole population because they might be more politically active and care more about politics than other people do. We model presidential approval as an ordinal logistic function of ideology and education to understand how support varies across ideological groups and educational levels. The model estimates that conservatives have substantially higher predicted approval probabilities than liberals, with these differences varying by education level, though uncertainty remains due to overlapping confidence intervals within some groups.
+
+
+
+## Model Fitting
 
 ```{r}
+#| results: 'hide'
+# Fit ordinal logistic regression
+fit_approval <- polr(approval ~ ideology + education, data = x)
+```
 
 
-polr(formula = approval ~ ideology + education,
-    data = x)
 
-fit_approval <- polr(approval ~ ideology + education,
-                      data = x)
+## Predicted Probabilities Plot
+
+```{r}
+# Predicted probabilities by ideology and education
+plot_predictions(fit_approval, condition = c("ideology", "education")) +
+  labs(
+    title = "Presidential Approval by Political Ideology and Education",
+    subtitle = "Approval generally increases with conservatism and higher education levels.",
+    caption = "Data: 2020 Cooperative Election Study (CES)",
+    x = "Political Ideology",
+    y = "Predicted Approval Probability",
+    fill = "Approval Level"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12),
+    plot.caption = element_text(size = 9, face = "italic"),
+    axis.text.x = element_text(angle = 30, hjust = 1)
+  )
+```
+
+---
+
+## Model Equation 
+
+ Reflects the structure of an ordinal logistic regression model
+
+$$
+P(Y \leq k) = \frac{1}{1 + \exp\left(-\left(\alpha_k - \beta_1 \cdot \text{Ideology} - \beta_2 \cdot \text{Education}\right)\right)}
+$$
+
+---
+
+## Model Coefficients Table
+
+```{r}
+#| results: 'hide'
+# Extract tidy model results
+tidy_approval_results <- suppressMessages(tidy(fit_approval, conf.int = TRUE))
 
 ```
 
 ```{r}
-fit_approval |>
-     tidy(conf.int = TRUE)
+# Format and display coefficient table
+tidy_approval_results %>%
+  filter(coef.type == "coefficient") %>%
+  select(term, estimate, conf.low, conf.high) %>%
+  mutate(
+    estimate = round(estimate, 3),
+    conf.low = round(conf.low, 3),
+    conf.high = round(conf.high, 3),
+    `95% CI` = paste0("[", conf.low, ", ", conf.high, "]")
+  ) %>%
+  select(-conf.low, -conf.high) %>%
+  rename(
+    Term = term,
+    Estimate = estimate
+  ) %>%
+  kable(
+    caption = "Model Coefficients with 95% Confidence Intervals",
+    booktabs = TRUE,
+    align = c("l", "r", "r")
+  ) %>%
+  kable_styling(full_width = FALSE, position = "left")
 ```
 
-
-
-
-$$
-Y \sim \text{Ordinal}(\boldsymbol{\rho}), \quad \text{where } \boldsymbol{\rho} = (\rho_1, \rho_2, \ldots, \rho_K)
-$$
-
-$$
-P(Y \leq k) = \rho_k = \frac{1}{1 + \exp\left(-\left(\alpha_k - \beta_1 \cdot \text{Ideology} - \beta_2 \cdot \text{Education}\right)\right)}
-$$
-
-
-
-```{r}
-
-#| cache: true
-
-```
-
-
-
-This is my data generating mechanism:
-
-$$
-\begin{aligned}
-\log\left[ \frac{P(\text{approval} \leq \text{Strongly Disapprove})}{1 - P(\text{approval} \leq \text{Strongly Disapprove})} \right] &= 2.26 
-+ 0.61(\text{ideology}_{\text{Liberal}}) + 2.40(\text{ideology}_{\text{Moderate}}) + 4.46(\text{ideology}_{\text{Conservative}}) + 5.45(\text{ideology}_{\text{Very Conservative}}) \\
-&\quad - 0.10(\text{education}_{\text{High School Graduate}}) - 0.31(\text{education}_{\text{Some College}}) \\
-&\quad - 0.32(\text{education}_{\text{2-Year}}) - 0.52(\text{education}_{\text{4-Year}}) - 0.73(\text{education}_{\text{Post-Grad}}) \\[1em]
-
-\log\left[ \frac{P(\text{approval} \leq \text{Disapprove / Somewhat Disapprove})}{1 - P(\text{approval} \leq \text{Disapprove / Somewhat Disapprove})} \right] &= 2.73 
-+ 0.61(\text{ideology}_{\text{Liberal}}) + 2.40(\text{ideology}_{\text{Moderate}}) + 4.46(\text{ideology}_{\text{Conservative}}) + 5.45(\text{ideology}_{\text{Very Conservative}}) \\
-&\quad - 0.10(\text{education}_{\text{High School Graduate}}) - 0.31(\text{education}_{\text{Some College}}) \\
-&\quad - 0.32(\text{education}_{\text{2-Year}}) - 0.52(\text{education}_{\text{4-Year}}) - 0.73(\text{education}_{\text{Post-Grad}}) \\[1em]
-
-\log\left[ \frac{P(\text{approval} \leq \text{Neither Approve nor Disapprove})}{1 - P(\text{approval} \leq \text{Neither Approve nor Disapprove})} \right] &= 2.82 
-+ 0.61(\text{ideology}_{\text{Liberal}}) + 2.40(\text{ideology}_{\text{Moderate}}) + 4.46(\text{ideology}_{\text{Conservative}}) + 5.45(\text{ideology}_{\text{Very Conservative}}) \\
-&\quad - 0.10(\text{education}_{\text{High School Graduate}}) - 0.31(\text{education}_{\text{Some College}}) \\
-&\quad - 0.32(\text{education}_{\text{2-Year}}) - 0.52(\text{education}_{\text{4-Year}}) - 0.73(\text{education}_{\text{Post-Grad}}) \\[1em]
-
-\log\left[ \frac{P(\text{approval} \leq \text{Approve / Somewhat Approve})}{1 - P(\text{approval} \leq \text{Approve / Somewhat Approve})} \right] &= 3.93 
-+ 0.61(\text{ideology}_{\text{Liberal}}) + 2.40(\text{ideology}_{\text{Moderate}}) + 4.46(\text{ideology}_{\text{Conservative}}) + 5.45(\text{ideology}_{\text{Very Conservative}}) \\
-&\quad - 0.10(\text{education}_{\text{High School Graduate}}) - 0.31(\text{education}_{\text{Some College}}) \\
-&\quad - 0.32(\text{education}_{\text{2-Year}}) - 0.52(\text{education}_{\text{4-Year}}) - 0.73(\text{education}_{\text{Post-Grad}})
-\end{aligned}
-$$

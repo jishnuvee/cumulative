@@ -35,6 +35,10 @@ ul.task-list li input[type="checkbox"] {
 <script src="analysis_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="analysis_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="analysis_files/libs/bootstrap/bootstrap-bb462d781dde1847d9e3ccf7736099dd.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="analysis_files/libs/kePrint-0.0.1/kePrint.js"></script>
+
+<link href="analysis_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -99,102 +103,109 @@ window.Quarto = {
 </header>
 
 
-<p>Public opinion about political leaders often depends on where people fall on the ideological spectrum. Using data from the 2020 Cooperative Election Study, one of the largest political surveys in the U.S., we explore how presidential approval varies across different ideological groups. A potential weakness in my model is that a large portion of the respondents from the data we collected were YouGov panelists, this group might not be representative of the whole population because they might be more politically active and care more about politics than other people do.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>Call:
-polr(formula = approval ~ ideology + education, data = x)
-
-Coefficients:
-              ideologyLiberal              ideologyModerate 
-                   0.61486022                    2.39760437 
-         ideologyConservative     ideologyVery Conservative 
-                   4.45525288                    5.44610561 
-educationHigh School Graduate         educationSome College 
-                  -0.09573811                   -0.31099458 
-              education2-Year               education4-Year 
-                  -0.32454679                   -0.52082362 
-           educationPost-Grad 
-                  -0.72732760 
-
-Intercepts:
-           Strongly Disapprove|Disapprove / Somewhat Disapprove 
-                                                       2.258003 
-Disapprove / Somewhat Disapprove|Neither Approve nor Disapprove 
-                                                       2.732765 
-      Neither Approve nor Disapprove|Approve / Somewhat Approve 
-                                                       2.818909 
-                    Approve / Somewhat Approve|Strongly Approve 
-                                                       3.932747 
-
-Residual Deviance: 99073.66 
-AIC: 99099.66 </code></pre>
-</div>
-</div>
+<p>Public opinion about political leaders often depends on where people fall on the ideological spectrum. Using data from the 2020 Cooperative Election Study, one of the largest political surveys in the U.S., we explore how presidential approval varies across different ideological groups. A potential weakness in my model is that a large portion of the respondents from the data we collected were YouGov panelists; this group might not be representative of the whole population because they might be more politically active and care more about politics than other people do. We model presidential approval as an ordinal logistic function of ideology and education to understand how support varies across ideological groups and educational levels. The model estimates that conservatives have substantially higher predicted approval probabilities than liberals, with these differences varying by education level, though uncertainty remains due to overlapping confidence intervals within some groups.</p>
+<section id="model-fitting" class="level2">
+<h2 class="anchored" data-anchor-id="model-fitting">Model Fitting</h2>
+</section>
+<section id="predicted-probabilities-plot" class="level2">
+<h2 class="anchored" data-anchor-id="predicted-probabilities-plot">Predicted Probabilities Plot</h2>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
 <pre><code>
 Re-fitting to get Hessian</code></pre>
 </div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 13 × 7
-   term                estimate std.error statistic conf.low conf.high coef.type
-   &lt;chr&gt;                  &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;    
- 1 ideologyLiberal       0.615     0.0538     11.4     0.510    0.721  coeffici…
- 2 ideologyModerate      2.40      0.0474     50.6     2.31     2.49   coeffici…
- 3 ideologyConservati…   4.46      0.0499     89.3     4.36     4.55   coeffici…
- 4 ideologyVery Conse…   5.45      0.0550     99.1     5.34     5.55   coeffici…
- 5 educationHigh Scho…  -0.0957    0.0600     -1.60   -0.213    0.0219 coeffici…
- 6 educationSome Coll…  -0.311     0.0607     -5.12   -0.430   -0.192  coeffici…
- 7 education2-Year      -0.325     0.0638     -5.09   -0.450   -0.199  coeffici…
- 8 education4-Year      -0.521     0.0606     -8.59   -0.640   -0.402  coeffici…
- 9 educationPost-Grad   -0.727     0.0634    -11.5    -0.852   -0.603  coeffici…
-10 Strongly Disapprov…   2.26      0.0724     31.2    NA       NA      scale    
-11 Disapprove / Somew…   2.73      0.0727     37.6    NA       NA      scale    
-12 Neither Approve no…   2.82      0.0727     38.8    NA       NA      scale    
-13 Approve / Somewhat…   3.93      0.0735     53.5    NA       NA      scale    </code></pre>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
 </div>
+</div>
+<hr>
+</section>
+<section id="model-equation" class="level2">
+<h2 class="anchored" data-anchor-id="model-equation">Model Equation</h2>
+<p>Reflects the structure of an ordinal logistic regression model</p>
 <p><span class="math display">\[
-Y \sim \text{Ordinal}(\boldsymbol{\rho}), \quad \text{where } \boldsymbol{\rho} = (\rho_1, \rho_2, \ldots, \rho_K)
+P(Y \leq k) = \frac{1}{1 + \exp\left(-\left(\alpha_k - \beta_1 \cdot \text{Ideology} - \beta_2 \cdot \text{Education}\right)\right)}
 \]</span></p>
-<p><span class="math display">\[
-P(Y \leq k) = \rho_k = \frac{1}{1 + \exp\left(-\left(\alpha_k - \beta_1 \cdot \text{Ideology} - \beta_2 \cdot \text{Education}\right)\right)}
-\]</span></p>
-<p>This is my data generating mechanism This is my data generating mechanism:</p>
-$$
-<span class="math display">\[\begin{aligned}
-\log\left[ \frac{P(\text{approval} \leq \text{Strongly Disapprove})}{1 - P(\text{approval} \leq \text{Strongly Disapprove})} \right] &amp;= 2.26
-+ 0.61(\text{ideology}_{\text{Liberal}}) + 2.40(\text{ideology}_{\text{Moderate}}) + 4.46(\text{ideology}_{\text{Conservative}}) + 5.45(\text{ideology}_{\text{Very Conservative}}) \\
-&amp;\quad - 0.10(\text{education}_{\text{High School Graduate}}) - 0.31(\text{education}_{\text{Some College}}) \\
-&amp;\quad - 0.32(\text{education}_{\text{2-Year}}) - 0.52(\text{education}_{\text{4-Year}}) - 0.73(\text{education}_{\text{Post-Grad}}) \\[1em]
+<hr>
+</section>
+<section id="model-coefficients-table" class="level2">
+<h2 class="anchored" data-anchor-id="model-coefficients-table">Model Coefficients Table</h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Model Coefficients with 95% Confidence Intervals</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">95% CI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">ideologyLiberal</td>
+<td style="text-align: right;">0.615</td>
+<td style="text-align: right;">[0.51, 0.721]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ideologyModerate</td>
+<td style="text-align: right;">2.398</td>
+<td style="text-align: right;">[2.306, 2.491]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ideologyConservative</td>
+<td style="text-align: right;">4.455</td>
+<td style="text-align: right;">[4.358, 4.554]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ideologyVery Conservative</td>
+<td style="text-align: right;">5.446</td>
+<td style="text-align: right;">[5.339, 5.555]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">educationHigh School Graduate</td>
+<td style="text-align: right;">-0.096</td>
+<td style="text-align: right;">[-0.213, 0.022]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">educationSome College</td>
+<td style="text-align: right;">-0.311</td>
+<td style="text-align: right;">[-0.43, -0.192]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">education2-Year</td>
+<td style="text-align: right;">-0.325</td>
+<td style="text-align: right;">[-0.45, -0.199]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">education4-Year</td>
+<td style="text-align: right;">-0.521</td>
+<td style="text-align: right;">[-0.64, -0.402]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">educationPost-Grad</td>
+<td style="text-align: right;">-0.727</td>
+<td style="text-align: right;">[-0.852, -0.603]</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 
-\log\left[ \frac{P(\text{approval} \leq \text{Disapprove / Somewhat Disapprove})}{1 - P(\text{approval} \leq \text{Disapprove / Somewhat Disapprove})} \right] &amp;= 2.73
-+ 0.61(\text{ideology}_{\text{Liberal}}) + 2.40(\text{ideology}_{\text{Moderate}}) + 4.46(\text{ideology}_{\text{Conservative}}) + 5.45(\text{ideology}_{\text{Very Conservative}}) \\
-&amp;\quad - 0.10(\text{education}_{\text{High School Graduate}}) - 0.31(\text{education}_{\text{Some College}}) \\
-&amp;\quad - 0.32(\text{education}_{\text{2-Year}}) - 0.52(\text{education}_{\text{4-Year}}) - 0.73(\text{education}_{\text{Post-Grad}}) \\[1em]
-
-\log\left[ \frac{P(\text{approval} \leq \text{Neither Approve nor Disapprove})}{1 - P(\text{approval} \leq \text{Neither Approve nor Disapprove})} \right] &amp;= 2.82
-+ 0.61(\text{ideology}_{\text{Liberal}}) + 2.40(\text{ideology}_{\text{Moderate}}) + 4.46(\text{ideology}_{\text{Conservative}}) + 5.45(\text{ideology}_{\text{Very Conservative}}) \\
-&amp;\quad - 0.10(\text{education}_{\text{High School Graduate}}) - 0.31(\text{education}_{\text{Some College}}) \\
-&amp;\quad - 0.32(\text{education}_{\text{2-Year}}) - 0.52(\text{education}_{\text{4-Year}}) - 0.73(\text{education}_{\text{Post-Grad}}) \\[1em]
-
-\log\left[ \frac{P(\text{approval} \leq \text{Approve / Somewhat Approve})}{1 - P(\text{approval} \leq \text{Approve / Somewhat Approve})} \right] &amp;= 3.93
-+ 0.61(\text{ideology}_{\text{Liberal}}) + 2.40(\text{ideology}_{\text{Moderate}}) + 4.46(\text{ideology}_{\text{Conservative}}) + 5.45(\text{ideology}_{\text{Very Conservative}}) \\
-&amp;\quad - 0.10(\text{education}_{\text{High School Graduate}}) - 0.31(\text{education}_{\text{Some College}}) \\
-&amp;\quad - 0.32(\text{education}_{\text{2-Year}}) - 0.52(\text{education}_{\text{4-Year}}) - 0.73(\text{education}_{\text{Post-Grad}})
-\end{aligned}\]</span>
-<p>$$</p>
-
+</section>
 
 </main>
 <!-- /main column -->
